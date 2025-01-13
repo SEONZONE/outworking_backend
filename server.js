@@ -1,31 +1,11 @@
 const express = require('express');
-const oracledb = require('oracledb');
 const app = express();
 const port = 3000;
+const db = require("./dbConfig");
 const cors = require('cors');
-
-require('dotenv').config({path: './.env'});
 
 app.use(express.json())
 app.use(cors());
-
-// Oracle 연결 설정
-const dbConfig = {
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    connectString: process.env.DB_URL,
-};
-
-// DB 연결 함수
-async function getConnection() {
-    try {
-        const connection = await oracledb.getConnection(dbConfig);
-        return connection;
-    } catch (err) {
-        console.log('DB 연결 에러:', err);
-        throw err;
-    }
-}
 
 
 app.get('/', (req, res) => {
@@ -36,39 +16,34 @@ app.get('/', (req, res) => {
 app.post('/outwork/list/reqUser', async (req, res) => {
     let connection;
     try {
-        connection = await oracledb.getConnection(dbConfig);
+        connection = await db.getConnection();
         const result = await connection.execute(
             'SELECT 이름,아이디 FROM EMP  ORDER BY 이름', []// 바인드 변수
-            , {outFormat: oracledb.OUT_FORMAT_OBJECT}
+            , {outFormat: db.OUT_FORMAT_OBJECT}
         );
         res.json(result.rows);
     } catch (err) {
         console.log(err);
         res.status(500).send(err);
     } finally {
-        if (connection) {
-            await connection.close();
-        }
+        await db.closeConnection(connection);
     }
 });
 
 //승인직원 목록 출력
 app.post('/outwork/list/approverUser', async (req, res) => {
-    let connection;
     try {
-        connection = await oracledb.getConnection(dbConfig);
+        connection = await db.getConnection();
         const result = await connection.execute(
             'SELECT 이름,아이디 FROM EMP WHERE 직위코드 IN (\'G\',\'B\') ORDER BY 이름', []
-            , {outFormat: oracledb.OUT_FORMAT_OBJECT}
+            , {outFormat: db.OUT_FORMAT_OBJECT}
         );
         res.json(result.rows);
     } catch (err) {
         console.log(err);
         res.status(500).send(err);
     } finally {
-        if (connection) {
-            await connection.close();
-        }
+        await db.closeConnection(connection);
     }
 });
 
@@ -77,30 +52,27 @@ app.post('/outwork/request', async (req, res) => {
     let connection;
     try {
         let data = req.body;
-        console.log(data);
         if (!data.approverUserId || !data.requestUserId || !data.location) {
-            return res.status(400).json({
+            return res.status(200).json({
                 message: '필수값을 입력해주세요!'
                 , code: 400
             })
         }
-        connection = await oracledb.getConnection(dbConfig);
-        const result = await connection.execute(
-            `INSERT INTO OUT_WORK (
-                IDX, 
-                요청아이디, 
-                승인아이디, 
-                외근장소, 
-                요청상태, 
-                요청시간
-            ) VALUES (
-                SEQ_OUT_WORK.nextval, 
-                :requestUserId, 
-                :approverUserId, 
-                :location, 
-                'R', 
-                TO_CHAR(SYSDATE,'YYYYMMDDHH24MISS')
-            )`,
+        connection = await db.getConnection();
+        let result = await connection.execute(
+            `INSERT INTO OUT_WORK
+             (IDX,
+              요청아이디,
+              승인아이디,
+              외근장소,
+              요청상태,
+              요청시간)
+             VALUES (SEQ_OUT_WORK.nextval,
+                     :requestUserId,
+                     :approverUserId,
+                     :location,
+                     'I',
+                     TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS'))`,
             {  // 바인드 변수를 객체 형태로 전달
                 requestUserId: data.requestUserId,
                 approverUserId: data.approverUserId,
@@ -121,12 +93,42 @@ app.post('/outwork/request', async (req, res) => {
             code: 500
         });
     } finally {
-        if (connection) {
-            await connection.close();
-        }
+        await db.closeConnection(connection);
     }
 })
 
-app.listen(port, () => {
-    console.log(`Server started on port ${port}`);
+//승인 요청중인 직원 목록
+app.post('/outwork/list/requestList', async (req, res) => {
+    try {
+        connection = await db.getConnection();
+        const result = await connection.execute(
+            `SELECT 요청아이디,
+                    E2.이름                                                               AS 요청자이름,
+                    승인아이디,
+                    E1.이름                                                               AS 승인자이름,
+                    요청상태,
+                    C.표시내용                                                              AS 요청상태화면명,
+                    TO_CHAR(TO_DATE(요청시간, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD HH24:MI:SS') AS 요청날짜,
+                    외근장소
+             FROM OUT_WORK O
+                      LEFT JOIN CODE C ON C.코드명 = O.요청상태 AND C.코드구분 = '외근요청상태'
+                      LEFT JOIN EMP E1 ON E1.아이디 = O.승인아이디
+                      LEFT JOIN EMP E2 ON E2.아이디 = O.요청아이디
+             ORDER BY IDX DESC`,
+            []// 바인드 변수
+            , {outFormat: db.OUT_FORMAT_OBJECT}
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+    }
+});
+
+app.listen(port, async () => {
+    try {
+        await db.initPool();
+    } catch (err) {
+        console.log(err);
+    }
 })
