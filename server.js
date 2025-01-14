@@ -102,7 +102,8 @@ app.post('/outwork/list/requestList', async (req, res) => {
     try {
         connection = await db.getConnection();
         const result = await connection.execute(
-            `SELECT 요청아이디,
+            `SELECT IDX,
+                    요청아이디,
                     E2.이름                                                               AS 요청자이름,
                     승인아이디,
                     E1.이름                                                               AS 승인자이름,
@@ -124,6 +125,40 @@ app.post('/outwork/list/requestList', async (req, res) => {
         res.status(500).send(err);
     }
 });
+
+// 승인/반려 처리
+app.post('/outwork/status/update', async (req, res) => {
+    let connection;
+    try {
+        let data = req.body;
+        connection = await db.getConnection();
+        const result = await connection.execute(
+            `UPDATE OUT_WORK
+             SET 요청상태 = :flag,
+                 요청시간 = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+             WHERE IDX = :idx`,
+            {
+                flag: data.flag,
+                idx: data.IDX
+            },
+            {autoCommit: true}
+        );
+        res.json({
+            success: true,
+            message: '상태 업데이트가 성공 했습니다.',
+            code: 200
+        });
+    } catch (err) {
+        res.json({
+            success: false,
+            message: '상태 업데이트가 실패 했습니다.',
+            error: err,
+            code: 500
+        });
+    } finally {
+        await db.closeConnection(connection);
+    }
+})
 
 app.listen(port, async () => {
     try {
