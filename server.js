@@ -1,6 +1,7 @@
+require('dotenv').config({path: './.env'});
 const express = require('express');
 const app = express();
-const port = 3000;
+const port = process.env.PORT;
 const db = require("./dbConfig");
 const cors = require('cors');
 
@@ -19,6 +20,27 @@ app.post('/outwork/list/reqUser', async (req, res) => {
         connection = await db.getConnection();
         const result = await connection.execute(
             'SELECT 이름,아이디 FROM EMP  ORDER BY 이름', []// 바인드 변수
+            , {outFormat: db.OUT_FORMAT_OBJECT}
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+    } finally {
+        await db.closeConnection(connection);
+    }
+});
+
+//승인 상태 출력
+app.post('/outwork/list/statusList', async (req, res) => {
+    let connection;
+    try {
+        connection = await db.getConnection();
+        const result = await connection.execute(
+            `SELECT *
+             FROM CODE
+             WHERE 코드구분 = '외근요청상태'
+               AND 사용여부 = 'Y'`, []// 바인드 변수
             , {outFormat: db.OUT_FORMAT_OBJECT}
         );
         res.json(result.rows);
@@ -100,6 +122,26 @@ app.post('/outwork/request', async (req, res) => {
 //승인 요청중인 직원 목록
 app.post('/outwork/list/requestList', async (req, res) => {
     try {
+        const conditions = [];
+        const bindParams = [];
+        if (req.body.요청시간 && req.body.요청시간.length > 0) {
+            conditions.push('O.요청시간 LIKE :요청시간 || \'%\'');
+            bindParams.push(req.body.요청시간);
+        }
+        if (req.body.요청상태 && req.body.요청상태.length > 0) {
+            conditions.push('O.요청상태 = :요청상태');
+            bindParams.push(req.body.요청상태);
+        }
+        if (req.body.승인아이디 && req.body.승인아이디.length > 0) {
+            conditions.push('O.승인아이디 = :승인아이디');
+            bindParams.push(req.body.승인아이디);
+        }
+        if (req.body.승인아이디 && req.body.승인아이디.length > 0) {
+            conditions.push('O.승인아이디 = :승인아이디');
+            bindParams.push(req.body.승인아이디);
+        }
+
+        const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
         connection = await db.getConnection();
         const result = await connection.execute(
             `SELECT IDX,
@@ -115,9 +157,10 @@ app.post('/outwork/list/requestList', async (req, res) => {
                       LEFT JOIN CODE C ON C.코드명 = O.요청상태 AND C.코드구분 = '외근요청상태'
                       LEFT JOIN EMP E1 ON E1.아이디 = O.승인아이디
                       LEFT JOIN EMP E2 ON E2.아이디 = O.요청아이디
+                 ${where}
              ORDER BY IDX DESC`,
-            []// 바인드 변수
-            , {outFormat: db.OUT_FORMAT_OBJECT}
+            bindParams,// 바인드 변수
+            {outFormat: db.OUT_FORMAT_OBJECT}
         );
         res.json(result.rows);
     } catch (err) {
