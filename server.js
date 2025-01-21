@@ -6,7 +6,10 @@ const db = require("./dbConfig");
 const cors = require('cors');
 
 app.use(express.json())
-app.use(cors());
+app.use(cors({
+    origin: process.env.API_URL,
+    credentials: true
+}));
 
 
 app.get('/', (req, res) => {
