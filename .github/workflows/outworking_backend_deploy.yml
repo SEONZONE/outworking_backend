@@ -1,0 +1,45 @@
+name: outworking_backend_deploy
+on:
+  push:
+    branches: main
+  pull_request:
+    branches: main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '23.x'
+          cache: 'npm'
+      - name: dependencies install
+        run: npm ci
+      - name: Build
+        run: npm build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploy connect Server
+        env:
+          AWS_HOST: ${{secrets.AWS_HOST}}
+          AWS_USER: ${{secrets.AWS_USER}}
+          ENV_CONTENT: ${{secrets.ENV_CONTENT}}
+          PROCESS_NAME: ${{secrets.PROCESS_NAME}}
+#        Github Action Runner 설정
+        run: |
+          ssh $AWS_USER@AWS_HOST << EOF
+            cd /home/ec2-user/outwork/backend
+            git pull origin main
+            echo "$ENV_CONTENT" > .env
+            npm install
+            pm2 restart "$PROCESS_NAME"
+          EOF
+          
+          
+          
+
