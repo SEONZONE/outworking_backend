@@ -34,13 +34,13 @@ jobs:
 #        Github Action Runner 설정
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "$AWS_HOST" >> ~/.ssh/known_hosts
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
-          ssh $AWS_USER@$AWS_HOST << EOF
-            cd /home/ec2-user/outwork/backend
+            echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+            chmod 600 ~/.ssh/id_rsa
+            ssh-keyscan -H "$AWS_HOST" >> ~/.ssh/known_hosts
+            eval "$(ssh-agent -s)"
+            ssh-add -v ~/.ssh/id_rsa
+            ssh -v $AWS_USER@$AWS_HOST << EOF
+            cd /home/***/outwork/backend
             git pull origin main
             echo "$ENV_CONTENT" > .env
             npm install
