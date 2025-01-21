@@ -38,7 +38,7 @@ jobs:
             chmod 600 ~/.ssh/id_rsa
             ssh-keyscan -H "$AWS_HOST" >> ~/.ssh/known_hosts
           scp -r ./* $AWS_USER@$AWS_HOST:/home/$AWS_USER/outwork/backend/
-          ssh $AWS_USER@$AWS_HOST "cd /home/$AWS_USER/outwork/backend && echo \"$ENV_CONTENT\" > .env && npm install && ~/.nvm/versions/node/v16.13.0/bin/pm2 restart \"$PROCESS_NAME\""
+          ssh $AWS_USER@$AWS_HOST "cd /home/$AWS_USER/outwork/backend && echo \"$ENV_CONTENT\" > .env && npm install && pm2 restart \"$PROCESS_NAME\""
           EOF
           
           
