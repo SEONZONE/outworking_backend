@@ -30,8 +30,13 @@ jobs:
           AWS_USER: ${{secrets.AWS_USER}}
           ENV_CONTENT: ${{secrets.ENV_CONTENT}}
           PROCESS_NAME: ${{secrets.PROCESS_NAME}}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 #        Github Action Runner 설정
         run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $AWS_HOST >> ~/.ssh/known_hosts
           ssh $AWS_USER@$AWS_HOST << EOF
             cd /home/ec2-user/outwork/backend
             git pull origin main
