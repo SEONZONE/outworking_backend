@@ -34,16 +34,15 @@ jobs:
 #        Github Action Runner 설정
         run: |
           mkdir -p ~/.ssh
-            echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-            chmod 600 ~/.ssh/id_rsa
-            ssh-keyscan -H "$AWS_HOST" >> ~/.ssh/known_hosts
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "$AWS_HOST" >> ~/.ssh/known_hosts
           scp -r ./* $AWS_USER@$AWS_HOST:/home/$AWS_USER/outwork/backend/
-          # 환경변수 파일 생성
-          ssh $AWS_USER@$AWS_HOST "cd /home/$AWS_USER/outwork/backend && echo \"$ENV_CONTENT\" > .env"
-          # npm install 실행
-          ssh $AWS_USER@$AWS_HOST "cd /home/$AWS_USER/outwork/backend && npm install"
-          # pm2 재시작
-          ssh $AWS_USER@$AWS_HOST "cd /home/$AWS_USER/outwork/backend && pm2 restart \"$PROCESS_NAME\""
+          ssh $AWS_USER@$AWS_HOST << EOF
+            cd /home/$AWS_USER/outwork/backend
+            echo "$ENV_CONTENT" > .env
+            npm install
+            pm2 restart "$PROCESS_NAME"
           EOF
           
           
