@@ -11,13 +11,14 @@ app.use(cors({
     credentials: true
 }));
 
+const prefix = process.env.NODE_ENV === 'PROD' ? '/api/' : '';
 
 app.get('/', (req, res) => {
     res.json({message: 'Hello World'});
 })
 
 //요청직원 목록 출력
-app.post('/outwork/list/reqUser', async (req, res) => {
+app.post(`${prefix}/outwork/list/reqUser`, async (req, res) => {
     let connection;
     try {
         connection = await db.getConnection();
@@ -35,7 +36,7 @@ app.post('/outwork/list/reqUser', async (req, res) => {
 });
 
 //승인 상태 출력
-app.post('/outwork/list/statusList', async (req, res) => {
+app.post(`${prefix}/outwork/list/statusList`, async (req, res) => {
     let connection;
     try {
         connection = await db.getConnection();
@@ -56,7 +57,7 @@ app.post('/outwork/list/statusList', async (req, res) => {
 });
 
 //승인직원 목록 출력
-app.post('/outwork/list/approverUser', async (req, res) => {
+app.post(`${prefix}/outwork/list/approverUser`, async (req, res) => {
     try {
         connection = await db.getConnection();
         const result = await connection.execute(
@@ -73,7 +74,7 @@ app.post('/outwork/list/approverUser', async (req, res) => {
 });
 
 //외근요청
-app.post('/outwork/request', async (req, res) => {
+app.post(`${prefix}/outwork/request`, async (req, res) => {
     let connection;
     try {
         let data = req.body;
@@ -123,7 +124,7 @@ app.post('/outwork/request', async (req, res) => {
 })
 
 //승인 요청중인 직원 목록
-app.post('/outwork/list/requestList', async (req, res) => {
+app.post(`${prefix}/outwork/list/requestList`, async (req, res) => {
     try {
         const conditions = [];
         const bindParams = [];
@@ -173,7 +174,7 @@ app.post('/outwork/list/requestList', async (req, res) => {
 });
 
 // 승인/반려 처리
-app.post('/outwork/status/update', async (req, res) => {
+app.post(`${prefix}/outwork/status/update`, async (req, res) => {
     let connection;
     try {
         let data = req.body;
