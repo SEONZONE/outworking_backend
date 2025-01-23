@@ -11,7 +11,7 @@ app.use(cors({
     credentials: true
 }));
 
-const prefix = process.env.NODE_ENV === 'production' ? '/api' : '';
+const prefix = process.env.NODE_ENV === ('production' || 'PROD') ? '/api' : '';
 
 app.get('/', (req, res) => {
     res.json({message: 'Hello World'});
