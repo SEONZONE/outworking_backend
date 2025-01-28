@@ -170,6 +170,8 @@ app.post(`${prefix}/outwork/list/requestList`, async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(500).send(err);
+    }finally {
+        await db.closeConnection(connection);
     }
 });
 
