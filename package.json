@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon server.js",
-    "build" : "echo 'No build step'"
+    "build": "echo 'No build step'"
   },
   "keywords": [],
   "author": "",
@@ -15,9 +15,11 @@
   "dependencies": {
     "axios": "^1.7.9",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "oracledb": "^6.7.1"
+    "oracledb": "^6.7.1",
+    "react-csv": "^2.2.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

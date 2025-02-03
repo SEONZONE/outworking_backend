@@ -128,9 +128,9 @@ app.post(`${prefix}/outwork/list/requestList`, async (req, res) => {
     try {
         const conditions = [];
         const bindParams = [];
-        if (req.body.요청시간 && req.body.요청시간.length > 0) {
+        if (req.body.요청월 && req.body.요청월.length > 0) {
             conditions.push('O.요청시간 LIKE :요청시간 || \'%\'');
-            bindParams.push(req.body.요청시간);
+            bindParams.push(req.body.요청월);
         }
         if (req.body.요청상태 && req.body.요청상태.length > 0) {
             conditions.push('O.요청상태 = :요청상태');
