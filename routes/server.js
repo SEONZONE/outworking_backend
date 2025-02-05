@@ -2,8 +2,10 @@ require('dotenv').config({path: './.env'});
 const express = require('express');
 const app = express();
 const port = process.env.PORT;
-const db = require("./dbConfig");
+const db = require("../function/dbConfig");
 const cors = require('cors');
+const moment = require('moment');
+const loginRouter = require('./auth/login');
 
 app.use(express.json())
 app.use(cors({
@@ -12,6 +14,8 @@ app.use(cors({
 }));
 
 const prefix = process.env.NODE_ENV === 'PROD' ? '/api' : '';
+
+app.use(`${prefix}/outwork`, loginRouter);
 
 app.get('/', (req, res) => {
     res.json({message: 'Hello World'});
@@ -110,9 +114,13 @@ app.post(`${prefix}/outwork/list/requestList`, async (req, res) => {
     try {
         const conditions = [];
         const bindParams = [];
+        conditions.push('O.처리일시 LIKE :처리일시 || \'%\'');
         if (req.body.요청월 && req.body.요청월.length > 0) {
-            conditions.push('O.처리일시 LIKE :처리일시 || \'%\'');
             bindParams.push(req.body.요청월);
+        } else {
+            // 요청월 없을시 현재 시간으로 대체
+            const month = moment().format('YYYYMM');
+            bindParams.push(month);
         }
         if (req.body.처리상태 && req.body.처리상태.length > 0) {
             conditions.push('O.처리상태 = :처리상태');
@@ -163,8 +171,8 @@ app.post(`${prefix}/outwork/status/update`, async (req, res) => {
                  처리일시 = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
              WHERE IDX = :idx`,
             {
-                flag: data.flag,
-                idx: data.IDX
+                id: data.ID,
+                password: data.PASSWORD
             },
             {autoCommit: true}
         );
