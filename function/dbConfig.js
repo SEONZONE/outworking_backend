@@ -1,6 +1,6 @@
 // Oracle 연결 설정
 const oracledb = require("oracledb");
-require('dotenv').config({path: './.env'});
+require('dotenv').config({path: '../.env'});
 
 //커넥션 풀 설정
 const dbConfig = {
