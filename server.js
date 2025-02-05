@@ -92,7 +92,7 @@ app.post(`${prefix}/outwork/request`, async (req, res) => {
               승인아이디,
               외근장소,
               요청상태,
-              요청시간)
+              처리일시)
              VALUES (SEQ_OUT_WORK.nextval,
                      :requestUserId,
                      :approverUserId,
@@ -129,7 +129,7 @@ app.post(`${prefix}/outwork/list/requestList`, async (req, res) => {
         const conditions = [];
         const bindParams = [];
         if (req.body.요청월 && req.body.요청월.length > 0) {
-            conditions.push('O.요청시간 LIKE :요청시간 || \'%\'');
+            conditions.push('O.처리일시 LIKE :처리일시 || \'%\'');
             bindParams.push(req.body.요청월);
         }
         if (req.body.요청상태 && req.body.요청상태.length > 0) {
@@ -155,7 +155,7 @@ app.post(`${prefix}/outwork/list/requestList`, async (req, res) => {
                     E1.이름                                                               AS 승인자이름,
                     요청상태,
                     C.표시내용                                                              AS 요청상태화면명,
-                    TO_CHAR(TO_DATE(요청시간, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD HH24:MI:SS') AS 요청날짜,
+                    TO_CHAR(TO_DATE(처리일시, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD HH24:MI:SS') AS 처리일시,
                     외근장소
              FROM OUT_WORK O
                       LEFT JOIN CODE C ON C.코드명 = O.요청상태 AND C.코드구분 = '외근요청상태'
@@ -184,7 +184,7 @@ app.post(`${prefix}/outwork/status/update`, async (req, res) => {
         const result = await connection.execute(
             `UPDATE OUT_WORK
              SET 요청상태 = :flag,
-                 요청시간 = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
+                 처리일시 = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
              WHERE IDX = :idx`,
             {
                 flag: data.flag,

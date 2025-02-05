@@ -27,7 +27,7 @@ CREATE TABLE OUT_WORK (
     승인아이디 VARCHAR2(50),
     외근장소 VARCHAR2(200),
     요청상태 VARCHAR2(1),
-    요청시간 VARCHAR2(14)
+    처리일시 VARCHAR2(14)
 );
 
 CREATE SEQUENCE SEQ_OUT_WORK
