@@ -26,7 +26,7 @@ CREATE TABLE OUT_WORK (
     요청아이디 VARCHAR2(50),
     승인아이디 VARCHAR2(50),
     외근장소 VARCHAR2(200),
-    요청상태 VARCHAR2(1),
+    처리상태 VARCHAR2(1),
     처리일시 VARCHAR2(14)
 );
 

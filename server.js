@@ -19,63 +19,48 @@ app.get('/', (req, res) => {
 
 //요청직원 목록 출력
 app.post(`${prefix}/outwork/list/reqUser`, async (req, res) => {
-    let connection;
     try {
-        connection = await db.getConnection();
-        const result = await connection.execute(
+        const result = await db.executeQuery(
             'SELECT 이름,아이디 FROM EMP  ORDER BY 이름', []// 바인드 변수
-            , {outFormat: db.OUT_FORMAT_OBJECT}
         );
         res.json(result.rows);
     } catch (err) {
         console.log(err);
         res.status(500).send(err);
-    } finally {
-        await db.closeConnection(connection);
     }
 });
 
 //승인 상태 출력
 app.post(`${prefix}/outwork/list/statusList`, async (req, res) => {
-    let connection;
     try {
-        connection = await db.getConnection();
-        const result = await connection.execute(
+        const result = await db.executeQuery(
             `SELECT *
              FROM CODE
              WHERE 코드구분 = '외근요청상태'
                AND 사용여부 = 'Y'`, []// 바인드 변수
-            , {outFormat: db.OUT_FORMAT_OBJECT}
         );
         res.json(result.rows);
     } catch (err) {
         console.log(err);
         res.status(500).send(err);
-    } finally {
-        await db.closeConnection(connection);
     }
 });
 
 //승인직원 목록 출력
 app.post(`${prefix}/outwork/list/approverUser`, async (req, res) => {
     try {
-        connection = await db.getConnection();
-        const result = await connection.execute(
+        const result = await db.executeQuery(
             'SELECT 이름,아이디 FROM EMP WHERE 직위코드 IN (\'G\',\'B\') ORDER BY 이름', []
-            , {outFormat: db.OUT_FORMAT_OBJECT}
         );
         res.json(result.rows);
     } catch (err) {
         console.log(err);
         res.status(500).send(err);
-    } finally {
-        await db.closeConnection(connection);
     }
 });
 
 //외근요청
 app.post(`${prefix}/outwork/request`, async (req, res) => {
-    let connection;
     try {
         let data = req.body;
         if (!data.approverUserId || !data.requestUserId || !data.location) {
@@ -84,14 +69,13 @@ app.post(`${prefix}/outwork/request`, async (req, res) => {
                 , code: 400
             })
         }
-        connection = await db.getConnection();
-        let result = await connection.execute(
+        const result = await db.executeQuery(
             `INSERT INTO OUT_WORK
              (IDX,
               요청아이디,
               승인아이디,
               외근장소,
-              요청상태,
+              처리상태,
               처리일시)
              VALUES (SEQ_OUT_WORK.nextval,
                      :requestUserId,
@@ -118,8 +102,6 @@ app.post(`${prefix}/outwork/request`, async (req, res) => {
             error: err,
             code: 500
         });
-    } finally {
-        await db.closeConnection(connection);
     }
 })
 
@@ -132,9 +114,9 @@ app.post(`${prefix}/outwork/list/requestList`, async (req, res) => {
             conditions.push('O.처리일시 LIKE :처리일시 || \'%\'');
             bindParams.push(req.body.요청월);
         }
-        if (req.body.요청상태 && req.body.요청상태.length > 0) {
-            conditions.push('O.요청상태 = :요청상태');
-            bindParams.push(req.body.요청상태);
+        if (req.body.처리상태 && req.body.처리상태.length > 0) {
+            conditions.push('O.처리상태 = :처리상태');
+            bindParams.push(req.body.처리상태);
         }
         if (req.body.승인아이디 && req.body.승인아이디.length > 0) {
             conditions.push('O.승인아이디 = :승인아이디');
@@ -146,44 +128,38 @@ app.post(`${prefix}/outwork/list/requestList`, async (req, res) => {
         }
 
         const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';
-        connection = await db.getConnection();
-        const result = await connection.execute(
+        const result = await db.executeQuery(
             `SELECT IDX,
                     요청아이디,
                     E2.이름                                                               AS 요청자이름,
                     승인아이디,
                     E1.이름                                                               AS 승인자이름,
-                    요청상태,
-                    C.표시내용                                                              AS 요청상태화면명,
+                    처리상태,
+                    C.표시내용                                                              AS 처리상태화면명,
                     TO_CHAR(TO_DATE(처리일시, 'YYYYMMDDHH24MISS'), 'YYYY-MM-DD HH24:MI:SS') AS 처리일시,
                     외근장소
              FROM OUT_WORK O
-                      LEFT JOIN CODE C ON C.코드명 = O.요청상태 AND C.코드구분 = '외근요청상태'
+                      LEFT JOIN CODE C ON C.코드명 = O.처리상태 AND C.코드구분 = '외근요청상태'
                       LEFT JOIN EMP E1 ON E1.아이디 = O.승인아이디
                       LEFT JOIN EMP E2 ON E2.아이디 = O.요청아이디
                  ${where}
              ORDER BY IDX DESC`,
             bindParams,// 바인드 변수
-            {outFormat: db.OUT_FORMAT_OBJECT}
         );
         res.json(result.rows);
     } catch (err) {
         console.log(err);
         res.status(500).send(err);
-    }finally {
-        await db.closeConnection(connection);
     }
 });
 
 // 승인/반려 처리
 app.post(`${prefix}/outwork/status/update`, async (req, res) => {
-    let connection;
     try {
         let data = req.body;
-        connection = await db.getConnection();
-        const result = await connection.execute(
+        const result = await db.executeQuery(
             `UPDATE OUT_WORK
-             SET 요청상태 = :flag,
+             SET 처리상태 = :flag,
                  처리일시 = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
              WHERE IDX = :idx`,
             {
@@ -204,8 +180,6 @@ app.post(`${prefix}/outwork/status/update`, async (req, res) => {
             error: err,
             code: 500
         });
-    } finally {
-        await db.closeConnection(connection);
     }
 })
 
