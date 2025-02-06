@@ -5,7 +5,7 @@
   "main": "routes/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon routes/server.js",
+    "dev": "nodemon index.js",
     "build": "echo 'No build step'"
   },
   "keywords": [],
@@ -18,6 +18,7 @@
     "date-fns": "^4.1.0",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
+    "express-session": "^1.18.1",
     "moment": "^2.30.1",
     "oracledb": "^6.7.1",
     "react-csv": "^2.2.2"

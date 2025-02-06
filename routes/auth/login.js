@@ -11,13 +11,15 @@ router.post(`/login`, async (req, res) => {
         let success = false;
         let message = '';
         const result = await db.executeQuery(
-            `SELECT COUNT(*) AS count FROM EMP WHERE 아이디 = :id AND 비밀번호 = :pw`,
+            `SELECT * FROM EMP WHERE 아이디 = :id AND 비밀번호 = :pw`,
             {
                 id: data.userid,
                 pw: crypto.pbkdf2Sync(data.password,process.env.CRYPTO,1, 64, "SHA512").toString("base64")
             },
         );
-        if(result.rows[0].COUNT > 0){
+        if(result.rows.length > 0){
+            req.session.userId = result.rows[0].아이디;
+            req.session.userName = result.rows[0].이름;
             success = true;
             message = '로그인이 성공 했습니다.'
         }else{
@@ -31,6 +33,7 @@ router.post(`/login`, async (req, res) => {
             code: 200
         });
     } catch (err) {
+        console.log(err);
         res.json({
             success: false,
             message: '로그인이 실패 했습니다.',

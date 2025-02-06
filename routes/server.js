@@ -1,31 +1,12 @@
-const path = require('path');
-require('dotenv').config({
-    path: path.resolve(__dirname, '../.env')
-});
 const express = require('express');
+const router = express.Router();
 const app = express();
-const port = process.env.PORT;
 const db = require("../function/dbConfig");
-const cors = require('cors');
 const moment = require('moment');
-const loginRouter = require('./auth/login');
-
 app.use(express.json())
-app.use(cors({
-    origin: process.env.API_URL,
-    credentials: true
-}));
-
-const prefix = process.env.NODE_ENV === 'PROD' ? '/api' : '';
-
-app.use(`${prefix}/outwork`, loginRouter);
-
-app.get('/', (req, res) => {
-    res.json({message: 'Hello World'});
-})
 
 //요청직원 목록 출력
-app.post(`${prefix}/outwork/list/reqUser`, async (req, res) => {
+router.post(`/list/reqUser`, async (req, res) => {
     try {
         const result = await db.executeQuery(
             'SELECT 이름,아이디 FROM EMP  ORDER BY 이름', []// 바인드 변수
@@ -38,7 +19,7 @@ app.post(`${prefix}/outwork/list/reqUser`, async (req, res) => {
 });
 
 //승인 상태 출력
-app.post(`${prefix}/outwork/list/statusList`, async (req, res) => {
+router.post(`/list/statusList`, async (req, res) => {
     try {
         const result = await db.executeQuery(
             `SELECT *
@@ -54,7 +35,7 @@ app.post(`${prefix}/outwork/list/statusList`, async (req, res) => {
 });
 
 //승인직원 목록 출력
-app.post(`${prefix}/outwork/list/approverUser`, async (req, res) => {
+router.post(`/list/approverUser`, async (req, res) => {
     try {
         const result = await db.executeQuery(
             'SELECT 이름,아이디 FROM EMP WHERE 직위코드 IN (\'G\',\'B\') ORDER BY 이름', []
@@ -67,7 +48,7 @@ app.post(`${prefix}/outwork/list/approverUser`, async (req, res) => {
 });
 
 //외근요청
-app.post(`${prefix}/outwork/request`, async (req, res) => {
+router.post(`/request`, async (req, res) => {
     try {
         let data = req.body;
         if (!data.approverUserId || !data.requestUserId || !data.location) {
@@ -113,7 +94,7 @@ app.post(`${prefix}/outwork/request`, async (req, res) => {
 })
 
 //승인 요청중인 직원 목록
-app.post(`${prefix}/outwork/list/requestList`, async (req, res) => {
+router.post(`/list/requestList`, async (req, res) => {
     try {
         const conditions = [];
         const bindParams = [];
@@ -165,7 +146,7 @@ app.post(`${prefix}/outwork/list/requestList`, async (req, res) => {
 });
 
 // 승인/반려 처리
-app.post(`${prefix}/outwork/status/update`, async (req, res) => {
+router.post(`/status/update`, async (req, res) => {
     try {
         let data = req.body;
         const result = await db.executeQuery(
@@ -193,11 +174,4 @@ app.post(`${prefix}/outwork/status/update`, async (req, res) => {
         });
     }
 })
-
-app.listen(port, async () => {
-    try {
-        await db.initPool();
-    } catch (err) {
-        console.log(err);
-    }
-})
+module.exports = router;
