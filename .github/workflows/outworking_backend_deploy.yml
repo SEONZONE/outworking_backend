@@ -31,14 +31,13 @@ jobs:
           ENV_CONTENT: ${{secrets.ENV_CONTENT}}
           PROCESS_NAME: ${{secrets.PROCESS_NAME}}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-#        Github Action Runner 설정
+        #        Github Action Runner 설정
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "$AWS_HOST" >> ~/.ssh/known_hosts
-          rsync -avz --delete ./* $AWS_USER@$AWS_HOST:/home/$AWS_USER/outwork/backend/
-#          scp -r ./* $AWS_USER@$AWS_HOST:/home/$AWS_USER/outwork/backend/
+          scp -r ./* $AWS_USER@$AWS_HOST:/home/$AWS_USER/outwork/backend/
           ssh $AWS_USER@$AWS_HOST << EOF
             cd /home/$AWS_USER/outwork/backend
             echo "$ENV_CONTENT" > .env
