@@ -37,7 +37,8 @@ jobs:
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "$AWS_HOST" >> ~/.ssh/known_hosts
-          scp -r ./* $AWS_USER@$AWS_HOST:/home/$AWS_USER/outwork/backend/
+          rsync -avz --delete ./* $AWS_USER@$AWS_HOST:/home/$AWS_USER/outwork/backend/
+#          scp -r ./* $AWS_USER@$AWS_HOST:/home/$AWS_USER/outwork/backend/
           ssh $AWS_USER@$AWS_HOST << EOF
             cd /home/$AWS_USER/outwork/backend
             echo "$ENV_CONTENT" > .env
