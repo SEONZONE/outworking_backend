@@ -24,8 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install rsync
-        run: sudo apt-get update && sudo apt-get install -y rsync
       - name: Deploy connect Server
         env:
           AWS_HOST: ${{secrets.AWS_HOST}}

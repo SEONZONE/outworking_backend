@@ -174,8 +174,8 @@ app.post(`${prefix}/outwork/status/update`, async (req, res) => {
                  처리일시 = TO_CHAR(SYSDATE, 'YYYYMMDDHH24MISS')
              WHERE IDX = :idx`,
             {
-                id: data.ID,
-                password: data.PASSWORD
+                flag: data.flag,
+                idx: data.IDX
             },
             {autoCommit: true}
         );
