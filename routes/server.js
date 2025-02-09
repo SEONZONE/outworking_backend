@@ -114,9 +114,9 @@ router.post(`/list/requestList`, async (req, res) => {
             conditions.push('O.승인아이디 = :승인아이디');
             bindParams.push(req.body.승인아이디);
         }
-        if (req.body.승인아이디 && req.body.승인아이디.length > 0) {
-            conditions.push('O.승인아이디 = :승인아이디');
-            bindParams.push(req.body.승인아이디);
+        if (req.body.요청아이디 && req.body.요청아이디.length > 0) {
+            conditions.push('O.요청아이디 = :요청아이디');
+            bindParams.push(req.body.요청아이디);
         }
 
         const where = conditions.length > 0 ? 'WHERE ' + conditions.join(' AND ') : '';

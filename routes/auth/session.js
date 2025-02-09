@@ -3,7 +3,7 @@ const session = require("express-session");
 const router = express.Router();
 
 
-router.get('/session',(req,res) =>{
+router.get('/auth/session',(req,res) =>{
     try{
         if (req.session.userId) {
             res.json({

@@ -5,7 +5,7 @@ const router = express.Router();
 const crypto = require('crypto');
 
 
-router.post(`/login`, async (req, res) => {
+router.post(`/auth/login`, async (req, res) => {
     try {
         const data = req.body.formData;
         let success = false;
